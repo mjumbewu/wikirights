@@ -30,6 +30,11 @@ def about():
     return render_template('about.html')
 
 
+@app.route('/sms-query/')
+def sms_query():
+    return '<html><body><textarea>' + request.data + '</textarea></body></html>'
+
+
 ###
 # The functions below should be applicable to all Flask apps.
 ###
