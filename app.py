@@ -8,7 +8,7 @@ This file creates your application.
 
 import os
 from flask import Flask, render_template, request, redirect, url_for
-from tropo import say
+from tropo import Tropo
 
 app = Flask(__name__)
 
@@ -31,9 +31,11 @@ def about():
     return render_template('about.html')
 
 
-@app.route('/sms-query/')
+@app.route('/sms-query')
 def sms_query():
-    return (say(request.data), 200, {'content-type': 'application/json'})
+    phone = Tropo()
+    phone.say(request.data)
+    return (phone.RenderJson(), 200, {'content-type': 'application/json'})
 
 
 ###
