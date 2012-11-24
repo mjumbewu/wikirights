@@ -9,6 +9,7 @@ This file creates your application.
 import os
 from flask import Flask, render_template, request, redirect, url_for
 from tropo import Tropo
+import json
 
 app = Flask(__name__)
 
@@ -33,9 +34,35 @@ def about():
 
 @app.route('/sms-query', methods=['GET', 'POST'])
 def sms_query():
+    user_data = json.loads(request.data)
+    search_terms = user_data['initialText']
+    # "i didn't get paid"
+    
+    topics = resolve_topics(search_terms)
+    
+    if topics:
+        response = 'Did you mean:'
+        choice = 0
+        for topic in topics:
+            choice += 1
+            response += '\n%d. "%s"' % (choice, topic)
+    else:
+        response = "I didn't understand you; please try again"
+    
+    # what action you can take
+    # who to contact to get help
+    
     phone = Tropo()
-    phone.say(request.data)
+    phone.say(response)
     return (phone.RenderJson(), 200, {'content-type': 'application/json'})
+    
+    
+def resolve_topics(terms):
+    """
+    Take a search string and return a set of topics that might match for the
+    query.
+    """
+    return ["I didn't get paid", "I got injured"]
 
 
 ###
