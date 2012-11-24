@@ -31,7 +31,7 @@ def about():
     return render_template('about.html')
 
 
-@app.route('/sms-query')
+@app.route('/sms-query', methods=['GET', 'POST'])
 def sms_query():
     phone = Tropo()
     phone.say(request.data)
