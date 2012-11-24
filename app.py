@@ -35,16 +35,31 @@ def about():
 @app.route('/sms-query', methods=['GET', 'POST'])
 def sms_query():
     user_data = json.loads(request.data)
-    search_terms = user_data['session']['initialText']
+    user_input = user_data['session']['initialText']
+    user_id = user_data['session']['from']['id']
     
+    conv = get_conversation(user_id)
+    
+    if conv is None:
+        return start_conversation(user_id, user_input)
+    
+    else:
+        return continue_conversation(user_id, conv['topics'], user_input)
+
+
+def start_conversation(user_id, search_terms):
     topics = resolve_topics(search_terms)
     
-    if topics:
+    if len(topics) == 1:
+        response = "You asked for %s: %s" % (topics[0]['title'], topics[0]['text'])
+    elif len(topics) > 1:
         response = 'Did you mean:'
         choice = 0
         for topic in topics:
             choice += 1
-            response += '\n%d. "%s"' % (choice, topic)
+            response += '\n%d. "%s"' % (choice, topic['title'])
+            
+        store_conversation(user_id, topics)
     else:
         response = "I didn't understand you; please try again"
     
@@ -54,8 +69,43 @@ def sms_query():
     phone = Tropo()
     phone.say(response)
     return (phone.RenderJson(), 200, {'content-type': 'application/json'})
+
+
+def continue_conversation(user_id, topics, choice):
+    if choice in topics:
+        response = "You asked for %s: %s" % (topics[choice]['title'], topics[choice]['text'])
+    else:
+        clear_conversation(user_id)
+        return start_conversation(user_id, choice)
     
+    phone = Tropo()
+    phone.say(response)
+    return (phone.RenderJson(), 200, {'content-type': 'application/json'})
     
+
+def store_conversation(user_id, topics):
+    """
+    Remember (store in the database) that we asked the user to choose from the
+    given topics.
+    """
+    pass
+
+
+def get_conversation(user_id):
+    """
+    Retrieve the topics that we asked the user to choose from, or return None
+    if we haven't aksed for anything from the user.
+    """
+    pass
+
+
+def clear_conversation(user_id):
+    """
+    Clear the record of a conversation with the user.
+    """
+    pass
+    
+
 def resolve_topics(terms):
     """
     Take a search string and return a set of topics that might match for the
@@ -65,23 +115,27 @@ def resolve_topics(terms):
     # return matching strings
     topics = [
         {
-            "title": "What if I didn't get paid"
+            "title": "What if I didn't get paid",
+            "text": "Some information about what to do if you didn't get paid"
         },
         {
-            "title": "What if I am injured on the job"
+            "title": "What if I am injured on the job",
+            "text": "Some information about what to do if you were injured on the job"
         },
         {
-            "title": "What if I am fired"
+            "title": "What if I got fired",
+            "text": "Some information about what to do if you got fired"
         },
         {
-            "title": "What if I quit"
+            "title": "What if I quit",
+            "text": "Some information about what to do if you quit your job"
         },
     ]
     
     matching_topics = []
     for topic in topics:
         if are_similar(topic['title'], terms):
-            matching_topics.append(topic['title'])
+            matching_topics.append(topic)
     
     return matching_topics
 
