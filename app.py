@@ -36,7 +36,6 @@ def about():
 def sms_query():
     user_data = json.loads(request.data)
     search_terms = user_data['session']['initialText']
-    # "i didn't get paid"
     
     topics = resolve_topics(search_terms)
     
@@ -62,7 +61,33 @@ def resolve_topics(terms):
     Take a search string and return a set of topics that might match for the
     query.
     """
-    return ["I didn't get paid", "I got injured"]
+    # search for terms in the db
+    # return matching strings
+    topics = [
+        {
+            "title": "What if I didn't get paid"
+        },
+        {
+            "title": "What if I am injured on the job"
+        },
+        {
+            "title": "What if I am fired"
+        },
+        {
+            "title": "What if I quit"
+        },
+    ]
+    
+    matching_topics = []
+    for topic in topics:
+        if are_similar(topic['title'], terms):
+            matching_topics.append(topic['title'])
+    
+    return matching_topics
+
+
+def are_similar(string1, string2):
+    return (string1 in string2) or (string2 in string1)
 
 
 ###
