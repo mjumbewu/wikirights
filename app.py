@@ -63,8 +63,9 @@ def start_conversation(user_id, search_terms):
     else:
         response = "I didn't understand you; please try again"
     
-    # what action you can take
-    # who to contact to get help
+    # What should I expect (what legal action can others take)
+    # Legal action can I take
+    # Who can I contact to get help
     
     phone = Tropo()
     phone.say(response)
