@@ -35,7 +35,7 @@ def about():
 @app.route('/sms-query', methods=['GET', 'POST'])
 def sms_query():
     user_data = json.loads(request.data)
-    search_terms = user_data['initialText']
+    search_terms = user_data['session']['initialText']
     # "i didn't get paid"
     
     topics = resolve_topics(search_terms)
